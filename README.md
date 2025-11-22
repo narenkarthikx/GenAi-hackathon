@@ -22,9 +22,25 @@ An intelligent tutoring platform for Tamil Nadu State Board students (Classes 7 
 - **Gap Distribution**: Visualize learning gaps across subjects with pie charts
 - **Class Management**: Monitor overall class health and individual student progress
 
+## 📖 Documentation
+
+### 🎯 Start Here
+- **[QUICK_REFERENCE.md](./QUICK_REFERENCE.md)** - Quick links, commands, and common tasks
+
+### 📚 Complete Guides
+- **[SYSTEM_ARCHITECTURE.md](./SYSTEM_ARCHITECTURE.md)** - Complete system overview, tech stack, Google tools, ADK agents explained in detail
+- **[VISUAL_DIAGRAMS.md](./VISUAL_DIAGRAMS.md)** - Flow diagrams, architecture visuals, database relationships
+- **[CODEBASE_ORGANIZATION.md](./CODEBASE_ORGANIZATION.md)** - Project structure and file organization
+
+### 📂 Additional Documentation
+- **[docs/SETUP_GUIDE.md](./docs/SETUP_GUIDE.md)** - Step-by-step setup instructions
+- **[docs/ADK_AGENTS_GUIDE.md](./docs/ADK_AGENTS_GUIDE.md)** - Deep dive into AI agent system
+- **[docs/FLASHCARDS_GUIDE.md](./docs/FLASHCARDS_GUIDE.md)** - Flashcard implementation
+- **[docs/GEMINI_INTEGRATION.md](./docs/GEMINI_INTEGRATION.md)** - Google Gemini AI setup
+
 ## Quick Start
 
-See [SETUP_GUIDE.md](./SETUP_GUIDE.md) for complete setup instructions.
+See [SETUP_GUIDE.md](./docs/SETUP_GUIDE.md) for complete setup instructions.
 
 ### TL;DR
 \`\`\`bash
