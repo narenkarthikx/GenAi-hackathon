@@ -4,11 +4,11 @@ import { useState, useEffect, lazy, Suspense } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { BookOpen, BarChart3, Zap, AlertCircle, Globe } from "lucide-react"
+import { BookOpen, BarChart3, Zap, AlertCircle } from "lucide-react"
 import LessonCard from "@/components/student/lesson-card"
 import GapDetector from "@/components/student/gap-detector"
 import { createClient } from "@/lib/supabase"
-import { translations, type Language } from "@/lib/utils/translations"
+import { useLanguage } from "@/lib/contexts/LanguageContext"
 
 // Lazy load heavy components
 const AIChatTutor = lazy(() => import("@/components/student/ai-chat-tutor"))
@@ -45,14 +45,13 @@ interface Gap {
 
 export default function LearnPage() {
   const supabase = createClient()
+  const { t } = useLanguage()
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
   const [lessons, setLessons] = useState<Lesson[]>([])
   const [gaps, setGaps] = useState<Gap[]>([])
   const [activeTab, setActiveTab] = useState<"recommended" | "gaps" | "all" | "ai-tutor" | "assessment" | "materials" | "syllabus">("recommended")
   const [loading, setLoading] = useState(true)
-  const [language, setLanguage] = useState<Language>("en")
-  const t = translations[language]
 
   useEffect(() => {
     const loadData = async () => {
@@ -67,9 +66,6 @@ export default function LearnPage() {
         const { data: profileData } = await supabase.from("student_profiles").select("*").eq("id", authUser.id).single()
 
         setProfile(profileData)
-        if (profileData?.language) {
-          setLanguage(profileData.language as Language)
-        }
 
         const { data: gapsData } = await supabase
           .from("learning_gaps")
@@ -284,13 +280,6 @@ export default function LearnPage() {
     })
   }
 
-  const handleLanguageChange = async (newLanguage: Language) => {
-    setLanguage(newLanguage)
-    if (user && profile) {
-      await supabase.from("student_profiles").update({ language: newLanguage }).eq("id", user.id)
-    }
-  }
-
   if (loading) {
     return (
       <div className="space-y-6 animate-pulse">
@@ -328,34 +317,19 @@ export default function LearnPage() {
 
   return (
     <div className="space-y-6">
-      {/* Language Selector */}
-      <div className="flex items-center gap-2 justify-end">
-        <Globe className="w-4 h-4 text-muted-foreground" />
-        <select
-          value={language}
-          onChange={(e) => handleLanguageChange(e.target.value as Language)}
-          className="px-3 py-1 border rounded-md text-sm"
-        >
-          <option value="en">English</option>
-          <option value="hi">हिंदी</option>
-          <option value="te">తెలుగు</option>
-          <option value="ta">தமிழ்</option>
-        </select>
-      </div>
-
       {/* Header */}
       <div className="space-y-2">
         <h1 className="text-3xl font-bold text-foreground">
           {t.common.welcome}, {profile?.name}!
         </h1>
         <p className="text-muted-foreground">
-          Grade {profile?.grade} • {t.student.myLessons}
+          {t.common.grade} {profile?.grade} • {t.student.myLessons}
         </p>
       </div>
 
       {/* Quick Stats */}
       <div className="grid md:grid-cols-3 gap-4">
-        <Card>
+        <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
@@ -367,19 +341,19 @@ export default function LearnPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">{t.student.learningStreak}</p>
-                <p className="text-3xl font-bold text-primary">0 days</p>
+                <p className="text-3xl font-bold text-primary">0 {t.common.days}</p>
               </div>
               <Zap className="w-8 h-8 text-primary/20" />
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
@@ -394,17 +368,17 @@ export default function LearnPage() {
 
       {/* Gap Alert */}
       {gaps.length > 0 && (
-        <Card className="bg-blue-50 border-blue-200">
+        <Card className="bg-blue-50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-800">
           <CardContent className="pt-6">
             <div className="flex items-start gap-4">
               <AlertCircle className="w-5 h-5 text-blue-600 mt-1 flex-shrink-0" />
               <div className="flex-1">
-                <h3 className="font-semibold text-blue-900 mb-1">
-                  {gaps.length} {t.student.learningGaps} Detected
+                <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">
+                  {gaps.length} {t.student.gapsDetected}
                 </h3>
-                <p className="text-sm text-blue-800 mb-3">We've identified areas where you might need extra support.</p>
+                <p className="text-sm text-blue-800 dark:text-blue-200 mb-3">{t.student.gapsDescription}</p>
                 <Button size="sm" onClick={() => setActiveTab("gaps")} className="bg-blue-600 hover:bg-blue-700">
-                  View Recommendations
+                  {t.common.viewRecommendations}
                 </Button>
               </div>
             </div>
@@ -413,77 +387,28 @@ export default function LearnPage() {
       )}
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b">
-        <button
-          onClick={() => setActiveTab("recommended")}
-          className={`px-4 py-2 font-medium transition-colors ${
-            activeTab === "recommended"
-              ? "text-primary border-b-2 border-primary"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          Recommended
-        </button>
-        <button
-          onClick={() => setActiveTab("gaps")}
-          className={`px-4 py-2 font-medium transition-colors ${
-            activeTab === "gaps"
-              ? "text-primary border-b-2 border-primary"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          {t.student.learningGaps} ({gaps.length})
-        </button>
-        <button
-          onClick={() => setActiveTab("all")}
-          className={`px-4 py-2 font-medium transition-colors ${
-            activeTab === "all"
-              ? "text-primary border-b-2 border-primary"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          All Lessons
-        </button>
-        <button
-          onClick={() => setActiveTab("ai-tutor")}
-          className={`px-4 py-2 font-medium transition-colors ${
-            activeTab === "ai-tutor"
-              ? "text-primary border-b-2 border-primary"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          🤖 AI Tutor
-        </button>
-        <button
-          onClick={() => setActiveTab("assessment")}
-          className={`px-4 py-2 font-medium transition-colors ${
-            activeTab === "assessment"
-              ? "text-primary border-b-2 border-primary"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          📝 Smart Test
-        </button>
-        <button
-          onClick={() => setActiveTab("materials")}
-          className={`px-4 py-2 font-medium transition-colors ${
-            activeTab === "materials"
-              ? "text-primary border-b-2 border-primary"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          📚 Study Materials
-        </button>
-        <button
-          onClick={() => setActiveTab("syllabus")}
-          className={`px-4 py-2 font-medium transition-colors ${
-            activeTab === "syllabus"
-              ? "text-primary border-b-2 border-primary"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          📋 Syllabus
-        </button>
+      <div className="flex gap-2 border-b overflow-x-auto">
+        {[
+          { key: "recommended", label: t.common.recommended },
+          { key: "gaps", label: `${t.student.learningGaps} (${gaps.length})` },
+          { key: "all", label: t.common.allLessons },
+          { key: "ai-tutor", label: `🤖 ${t.student.aiTutor}` },
+          { key: "assessment", label: `📝 ${t.student.smartTest}` },
+          { key: "materials", label: `📚 ${t.student.studyMaterials}` },
+          { key: "syllabus", label: `📋 ${t.student.syllabus}` },
+        ].map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key as any)}
+            className={`px-4 py-2 font-medium transition-colors whitespace-nowrap ${
+              activeTab === tab.key
+                ? "text-primary border-b-2 border-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {/* Content */}
@@ -506,7 +431,7 @@ export default function LearnPage() {
           ) : (
             <Card>
               <CardContent className="pt-6 text-center">
-                <p className="text-muted-foreground">No gaps detected. Great progress!</p>
+                <p className="text-muted-foreground">{t.student.noGaps}</p>
               </CardContent>
             </Card>
           )}
