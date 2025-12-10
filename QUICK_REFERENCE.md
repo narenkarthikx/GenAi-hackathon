@@ -8,7 +8,6 @@
 | [VISUAL_DIAGRAMS.md](./VISUAL_DIAGRAMS.md) | **Visual flow diagrams** - User flows, API flows, database relationships | Need to visualize how things connect |
 | [docs/SETUP_GUIDE.md](./docs/SETUP_GUIDE.md) | **Setup instructions** - Step-by-step installation | Setting up for the first time |
 | [docs/ADK_AGENTS_GUIDE.md](./docs/ADK_AGENTS_GUIDE.md) | **AI agents deep dive** - How each agent works | Working with AI features |
-| [CODEBASE_ORGANIZATION.md](./CODEBASE_ORGANIZATION.md) | **Folder structure** - Where everything lives | Finding files or adding features |
 
 ---
 
@@ -273,9 +272,9 @@ Concurrent Users: 1000+
 ## 📞 Support & Resources
 
 - **Documentation**: See all `.md` files in root and `/docs`
-- **Code Organization**: [CODEBASE_ORGANIZATION.md](./CODEBASE_ORGANIZATION.md)
 - **Visual Diagrams**: [VISUAL_DIAGRAMS.md](./VISUAL_DIAGRAMS.md)
 - **Full Architecture**: [SYSTEM_ARCHITECTURE.md](./SYSTEM_ARCHITECTURE.md)
+- **Deployment Guide**: [docs/GOOGLE_CLOUD_DEPLOYMENT.md](./docs/GOOGLE_CLOUD_DEPLOYMENT.md)
 
 ---
 

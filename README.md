@@ -1,6 +1,6 @@
-# AI Skill Gap Radar - Personalized AI Tutoring System
+# Edvion - Learning with Vision:Personalized AI Tutoring System
 
-An intelligent tutoring platform for Tamil Nadu State Board students (Classes 7 & 10), featuring multi-agent AI system, adaptive learning, automatic gap detection, and comprehensive curriculum coverage.
+An intelligent tutoring platform for Tamil Nadu State Board students, featuring multi-agent AI system, adaptive learning, automatic gap detection, and comprehensive curriculum coverage.
 
 ## Key Features
 
@@ -24,19 +24,22 @@ An intelligent tutoring platform for Tamil Nadu State Board students (Classes 7 
 
 ## 📖 Documentation
 
-### 🎯 Start Here
+### 🎯 Quick Start
 - **[QUICK_REFERENCE.md](./QUICK_REFERENCE.md)** - Quick links, commands, and common tasks
-
-### 📚 Complete Guides
-- **[SYSTEM_ARCHITECTURE.md](./SYSTEM_ARCHITECTURE.md)** - Complete system overview, tech stack, Google tools, ADK agents explained in detail
-- **[VISUAL_DIAGRAMS.md](./VISUAL_DIAGRAMS.md)** - Flow diagrams, architecture visuals, database relationships
-- **[CODEBASE_ORGANIZATION.md](./CODEBASE_ORGANIZATION.md)** - Project structure and file organization
-
-### 📂 Additional Documentation
 - **[docs/SETUP_GUIDE.md](./docs/SETUP_GUIDE.md)** - Step-by-step setup instructions
+
+### 📚 Architecture & Design
+- **[SYSTEM_ARCHITECTURE.md](./SYSTEM_ARCHITECTURE.md)** - Complete system overview, tech stack, Google tools
+- **[VISUAL_DIAGRAMS.md](./VISUAL_DIAGRAMS.md)** - Flow diagrams, architecture visuals, database relationships
+
+### 🤖 Feature Guides
 - **[docs/ADK_AGENTS_GUIDE.md](./docs/ADK_AGENTS_GUIDE.md)** - Deep dive into AI agent system
-- **[docs/FLASHCARDS_GUIDE.md](./docs/FLASHCARDS_GUIDE.md)** - Flashcard implementation
-- **[docs/GEMINI_INTEGRATION.md](./docs/GEMINI_INTEGRATION.md)** - Google Gemini AI setup
+- **[docs/FLASHCARDS_GUIDE.md](./docs/FLASHCARDS_GUIDE.md)** - Flashcard implementation details
+- **[docs/GEMINI_INTEGRATION.md](./docs/GEMINI_INTEGRATION.md)** - Google Gemini AI integration
+
+### 📚 Curriculum & Deployment
+- **[docs/CLASS10_CURRICULUM_GUIDE.md](./docs/CLASS10_CURRICULUM_GUIDE.md)** - Tamil Nadu Class 10 curriculum reference
+- **[docs/GOOGLE_CLOUD_DEPLOYMENT.md](./docs/GOOGLE_CLOUD_DEPLOYMENT.md)** - Deploy to Google Cloud Platform
 
 ## Quick Start
 
@@ -177,6 +180,27 @@ All data is protected with Row-Level Security (RLS) policies.
 - Role-based access control
 - Input validation and error handling
 
+## 📁 Project Structure
+
+```
+edvion/
+├── app/                        # Next.js app directory
+│   ├── api/                   # API routes (AI tutor, assessments, agents)
+│   ├── auth/                  # Authentication pages
+│   ├── student/               # Student dashboard & features
+│   └── teacher/               # Teacher dashboard & analytics
+├── components/                 # React components
+│   ├── student/               # Student-specific components
+│   └── ui/                    # Shadcn UI components
+├── lib/                       # Core business logic
+│   ├── ai/                    # AI agents & tutoring logic
+│   ├── curriculum/            # Curriculum data & flashcards
+│   ├── supabase/              # Database utilities
+│   └── utils/                 # Helper functions & i18n
+├── docs/                      # Documentation
+└── public/                    # Static assets
+```
+
 ## Future Enhancements
 
 - **Voice-based Learning**: Speech-to-text for voice interactions
@@ -188,18 +212,13 @@ All data is protected with Row-Level Security (RLS) policies.
 - **Video Lessons**: AI-generated video explanations
 - **Peer Learning**: Student collaboration features
 
-## Documentation
+## 📞 Support
 
-For detailed documentation, see the [`/docs`](./docs) folder:
-- [Setup Guide](./docs/SETUP_GUIDE.md)
-- [ADK Agents Guide](./docs/ADK_AGENTS_GUIDE.md)
-- [Flashcards Guide](./docs/FLASHCARDS_GUIDE.md)
-- [Gemini Integration](./docs/GEMINI_INTEGRATION.md)
-- [Hackathon Features](./docs/HACKATHON_FEATURES.md)
+For setup issues, check the [SETUP_GUIDE.md](./docs/SETUP_GUIDE.md) troubleshooting section or refer to the documentation links above.
 
-## Support
+---
 
-For setup issues, see [SETUP_GUIDE.md](./SETUP_GUIDE.md) troubleshooting section.
+**Built with ❤️ for Tamil Nadu students**
 
 ## License
 
