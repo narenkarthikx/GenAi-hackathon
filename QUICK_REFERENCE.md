@@ -274,7 +274,6 @@ Concurrent Users: 1000+
 - **Documentation**: See all `.md` files in root and `/docs`
 - **Visual Diagrams**: [VISUAL_DIAGRAMS.md](./VISUAL_DIAGRAMS.md)
 - **Full Architecture**: [SYSTEM_ARCHITECTURE.md](./SYSTEM_ARCHITECTURE.md)
-- **Deployment Guide**: [docs/GOOGLE_CLOUD_DEPLOYMENT.md](./docs/GOOGLE_CLOUD_DEPLOYMENT.md)
 
 ---
 

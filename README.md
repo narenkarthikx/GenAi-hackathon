@@ -35,11 +35,7 @@ An intelligent tutoring platform for Tamil Nadu State Board students, featuring 
 ### 🤖 Feature Guides
 - **[docs/ADK_AGENTS_GUIDE.md](./docs/ADK_AGENTS_GUIDE.md)** - Deep dive into AI agent system
 - **[docs/FLASHCARDS_GUIDE.md](./docs/FLASHCARDS_GUIDE.md)** - Flashcard implementation details
-- **[docs/GEMINI_INTEGRATION.md](./docs/GEMINI_INTEGRATION.md)** - Google Gemini AI integration
-
-### 📚 Curriculum & Deployment
 - **[docs/CLASS10_CURRICULUM_GUIDE.md](./docs/CLASS10_CURRICULUM_GUIDE.md)** - Tamil Nadu Class 10 curriculum reference
-- **[docs/GOOGLE_CLOUD_DEPLOYMENT.md](./docs/GOOGLE_CLOUD_DEPLOYMENT.md)** - Deploy to Google Cloud Platform
 
 ## Quick Start
 
