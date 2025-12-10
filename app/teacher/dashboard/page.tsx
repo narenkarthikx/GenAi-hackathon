@@ -67,36 +67,67 @@ export default function TeacherDashboard() {
 
         setUser(user)
 
+        // Get all students
         const { data: studentProfiles, error: profilesError } = await supabase.from("student_profiles").select("*")
 
         if (profilesError) throw new Error(profilesError.message)
 
+        // Get all assessments
+        const { data: assessments, error: assessmentsError } = await supabase
+          .from("assessments")
+          .select("*")
+          .order('created_at', { ascending: true })
+
+        if (assessmentsError) throw new Error(assessmentsError.message)
+
+        // Get progress tracking
         const { data: progressData, error: progressError } = await supabase.from("progress_tracking").select("*")
 
         if (progressError) throw new Error(progressError.message)
 
-        // Calculate statistics
+        // Calculate statistics from real assessment data
         if (studentProfiles && studentProfiles.length > 0) {
-          const studentProgressMap = new Map<string, any[]>()
-          progressData?.forEach((p) => {
-            if (!studentProgressMap.has(p.student_id)) {
-              studentProgressMap.set(p.student_id, [])
+          const studentAssessmentMap = new Map<string, any[]>()
+          assessments?.forEach((assessment) => {
+            if (!studentAssessmentMap.has(assessment.student_id)) {
+              studentAssessmentMap.set(assessment.student_id, [])
             }
-            studentProgressMap.get(p.student_id)?.push(p)
+            studentAssessmentMap.get(assessment.student_id)?.push(assessment)
           })
 
           const processedStudents: StudentProgress[] = studentProfiles.map((student) => {
-            const studentProgress = studentProgressMap.get(student.id) || []
-            const completedLessons = studentProgress.filter((p) => p.completed).length
-            const scores = studentProgress.filter((p) => p.score).map((p) => p.score)
+            const studentAssessments = studentAssessmentMap.get(student.id) || []
+            
+            // Calculate actual subject scores from assessments
+            const subjectScores: { [key: string]: number[] } = {}
+            studentAssessments.forEach((assessment) => {
+              const subject = (assessment.subject || 'general').toLowerCase()
+              if (!subjectScores[subject]) {
+                subjectScores[subject] = []
+              }
+              subjectScores[subject].push(assessment.score || 0)
+            })
 
-            // Calculate subject-wise scores (Tamil Nadu curriculum)
-            const mathematics = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b) / scores.length) : 0
-            const science = Math.round(mathematics * 0.95) // Simulate variance
-            const english = Math.round(mathematics * 1.05)
-            const socialScience = Math.round(mathematics * 0.92)
-            const tamil = Math.round(mathematics * 1.08)
-            const overall = Math.round((mathematics + science + english + socialScience + tamil) / 5)
+            // Average scores per subject
+            const mathematics = subjectScores.mathematics?.length 
+              ? Math.round(subjectScores.mathematics.reduce((a, b) => a + b, 0) / subjectScores.mathematics.length) 
+              : 0
+            const science = subjectScores.science?.length
+              ? Math.round(subjectScores.science.reduce((a, b) => a + b, 0) / subjectScores.science.length)
+              : 0
+            const english = subjectScores.english?.length
+              ? Math.round(subjectScores.english.reduce((a, b) => a + b, 0) / subjectScores.english.length)
+              : 0
+            const socialScience = subjectScores['social science']?.length || subjectScores.social?.length
+              ? Math.round((subjectScores['social science'] || subjectScores.social).reduce((a, b) => a + b, 0) / (subjectScores['social science'] || subjectScores.social).length)
+              : 0
+            const tamil = subjectScores.tamil?.length
+              ? Math.round(subjectScores.tamil.reduce((a, b) => a + b, 0) / subjectScores.tamil.length)
+              : 0
+            
+            const overall = studentAssessments.length > 0
+              ? Math.round((mathematics + science + english + socialScience + tamil) / 5)
+              : 0
 
             return {
               student_id: student.id,
@@ -152,10 +183,7 @@ export default function TeacherDashboard() {
   }, [supabase])
 
   const classPerformance = [
-    { month: "Sept", mathematics: 55, science: 60, english: 65, social: 58, tamil: 70 },
-    { month: "Oct", mathematics: 62, science: 65, english: 68, social: 62, tamil: 72 },
-    { month: "Nov", mathematics: 68, science: 70, english: 70, social: 65, tamil: 75 },
-    { month: "Dec", mathematics: stats.averageMathematics, science: stats.averageScience, english: stats.averageEnglish, social: stats.averageSocialScience, tamil: stats.averageTamil },
+    { month: "Recent", mathematics: stats.averageMathematics, science: stats.averageScience, english: stats.averageEnglish, social: stats.averageSocialScience, tamil: stats.averageTamil },
   ]
 
   const gapDistribution = [
@@ -242,52 +270,66 @@ export default function TeacherDashboard() {
       <div className="grid md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Class Performance Trend</CardTitle>
-            <CardDescription>Monthly average by subject - Tamil Nadu Curriculum</CardDescription>
+            <CardTitle>Class Performance Overview</CardTitle>
+            <CardDescription>Current average scores by subject - Tamil Nadu Curriculum (based on actual assessments)</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={classPerformance}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="mathematics" stroke="#3b82f6" strokeWidth={2} name="Mathematics" />
-                <Line type="monotone" dataKey="science" stroke="#10b981" strokeWidth={2} name="Science" />
-                <Line type="monotone" dataKey="english" stroke="#f59e0b" strokeWidth={2} name="English" />
-                <Line type="monotone" dataKey="social" stroke="#8b5cf6" strokeWidth={2} name="Social" />
-                <Line type="monotone" dataKey="tamil" stroke="#ef4444" strokeWidth={2} name="Tamil" />
-              </LineChart>
-            </ResponsiveContainer>
+            {stats.totalStudents === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <p className="text-muted-foreground mb-2">No student data available</p>
+                <p className="text-sm text-muted-foreground">Students will appear here once they register</p>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={classPerformance}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis domain={[0, 100]} />
+                  <Tooltip />
+                  <Legend />
+                  <Line type="monotone" dataKey="mathematics" stroke="#3b82f6" strokeWidth={2} name="Mathematics" />
+                  <Line type="monotone" dataKey="science" stroke="#10b981" strokeWidth={2} name="Science" />
+                  <Line type="monotone" dataKey="english" stroke="#f59e0b" strokeWidth={2} name="English" />
+                  <Line type="monotone" dataKey="social" stroke="#8b5cf6" strokeWidth={2} name="Social" />
+                  <Line type="monotone" dataKey="tamil" stroke="#ef4444" strokeWidth={2} name="Tamil" />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
             <CardTitle>Subject-wise Gap Analysis</CardTitle>
-            <CardDescription>Areas needing improvement (100% - current score)</CardDescription>
+            <CardDescription>Areas needing improvement (based on actual test scores - 100% target)</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={gapDistribution}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, value }) => `${name}: ${value.toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {gapDistribution.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+            {stats.totalStudents === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <p className="text-muted-foreground mb-2">No assessment data available</p>
+                <p className="text-sm text-muted-foreground">Data will appear when students complete assessments</p>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={gapDistribution}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, value }) => `${name}: ${value.toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {gapDistribution.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -296,55 +338,58 @@ export default function TeacherDashboard() {
       <Card>
         <CardHeader>
           <CardTitle>Students Needing Support</CardTitle>
-          <CardDescription>Students with overall performance below 50%</CardDescription>
+          <CardDescription>Students with overall performance below 50% (based on actual assessment results)</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {students
-              .filter((s) => s.status === "at-risk")
-              .slice(0, 5)
-              .map((student) => (
-                <div key={student.student_id} className="p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="font-medium">{student.name}</span>
-                    <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded">At Risk - {student.overall}% Overall</span>
+            {students.length === 0 ? (
+              <p className="text-center text-muted-foreground py-4">No students registered yet.</p>
+            ) : students.filter((s) => s.status === "at-risk").length === 0 ? (
+              <p className="text-center text-muted-foreground py-4">Great! All students are performing well (50%+ scores).</p>
+            ) : (
+              students
+                .filter((s) => s.status === "at-risk")
+                .slice(0, 5)
+                .map((student) => (
+                  <div key={student.student_id} className="p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="font-medium">{student.name}</span>
+                      <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded">At Risk - {student.overall}% Overall</span>
+                    </div>
+                    <div className="grid grid-cols-5 gap-2">
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Math: {student.mathematics}%</p>
+                        <div className="w-full bg-muted rounded h-1.5">
+                          <div className="bg-blue-500 h-1.5 rounded" style={{ width: `${student.mathematics}%` }}></div>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Science: {student.science}%</p>
+                        <div className="w-full bg-muted rounded h-1.5">
+                          <div className="bg-green-500 h-1.5 rounded" style={{ width: `${student.science}%` }}></div>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">English: {student.english}%</p>
+                        <div className="w-full bg-muted rounded h-1.5">
+                          <div className="bg-orange-500 h-1.5 rounded" style={{ width: `${student.english}%` }}></div>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Social: {student.socialScience}%</p>
+                        <div className="w-full bg-muted rounded h-1.5">
+                          <div className="bg-purple-500 h-1.5 rounded" style={{ width: `${student.socialScience}%` }}></div>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Tamil: {student.tamil}%</p>
+                        <div className="w-full bg-muted rounded h-1.5">
+                          <div className="bg-red-500 h-1.5 rounded" style={{ width: `${student.tamil}%` }}></div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-5 gap-2">
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Math: {student.mathematics}%</p>
-                      <div className="w-full bg-muted rounded h-1.5">
-                        <div className="bg-blue-500 h-1.5 rounded" style={{ width: `${student.mathematics}%` }}></div>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Science: {student.science}%</p>
-                      <div className="w-full bg-muted rounded h-1.5">
-                        <div className="bg-green-500 h-1.5 rounded" style={{ width: `${student.science}%` }}></div>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">English: {student.english}%</p>
-                      <div className="w-full bg-muted rounded h-1.5">
-                        <div className="bg-orange-500 h-1.5 rounded" style={{ width: `${student.english}%` }}></div>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Social: {student.socialScience}%</p>
-                      <div className="w-full bg-muted rounded h-1.5">
-                        <div className="bg-purple-500 h-1.5 rounded" style={{ width: `${student.socialScience}%` }}></div>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Tamil: {student.tamil}%</p>
-                      <div className="w-full bg-muted rounded h-1.5">
-                        <div className="bg-red-500 h-1.5 rounded" style={{ width: `${student.tamil}%` }}></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            {students.filter((s) => s.status === "at-risk").length === 0 && (
-              <p className="text-center text-muted-foreground py-4">Great! All students are performing well.</p>
+                ))
             )}
           </div>
         </CardContent>
